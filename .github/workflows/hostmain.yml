@@ -14,13 +14,13 @@ jobs:
       - name: Checkout the files
         uses: actions/checkout@v2
 
-      - name: Deploy to Server 1
+      - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
-          TARGET: /home
+          TARGET: /var/www/html  # Directly deploy to /var/www/html
 
       - name: Executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
@@ -33,7 +33,5 @@ jobs:
             sudo apt-get install -y apache2
             sudo systemctl start apache2
             sudo systemctl enable apache2
-            # Move files from /home to /var/www/html
-            sudo mv /home/* /var/www/html
             sudo chown -R www-data:www-data /var/www/html
             sudo chmod -R 755 /var/www/html

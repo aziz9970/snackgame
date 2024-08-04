@@ -1,4 +1,4 @@
-name: Push-to-EC2 instance
+name: Push-to-EC2 instances
 
 on:
   push:

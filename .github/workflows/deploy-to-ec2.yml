@@ -1,6 +1,5 @@
 name: Push-to-EC2
 
-# Trigger deployment only on push to main branch
 on:
   push:
     branches:
@@ -14,6 +13,13 @@ jobs:
     steps:
       - name: Checkout the files
         uses: actions/checkout@v2
+
+      - name: Debug SSH Key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST_DNS }} >> ~/.ssh/known_hosts
+          ssh -i /home/runner/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST_DNS }} "echo SSH key authentication works"
 
       - name: Deploy to Server 1
         uses: easingthemes/ssh-deploy@main
@@ -34,5 +40,5 @@ jobs:
             sudo apt-get install -y apache2
             sudo systemctl start apache2
             sudo systemctl enable apache2
-            cd home
+            cd /home
             sudo mv * /var/www/html

@@ -14,13 +14,20 @@ jobs:
       - name: Checkout the files
         uses: actions/checkout@v2
 
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST_DNS }} >> ~/.ssh/known_hosts
+
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
-          TARGET: ${{ secrets.TARGET_DIR }}  # This is where the files will be deployed
+          TARGET: ${{ secrets.TARGET_DIR }}
 
       - name: Execute remote commands via SSH
         uses: appleboy/ssh-action@master
@@ -33,5 +40,5 @@ jobs:
             sudo apt-get install -y apache2
             sudo systemctl start apache2
             sudo systemctl enable apache2
-            sudo rm -rf ${{ secrets.TARGET_DIR }}/*  # Clear old content from /var/www/html
-            sudo mv ~/your_project/* ${{ secrets.TARGET_DIR }}/  # Move new files to /var/www/html
+            sudo rm -rf ${{ secrets.TARGET_DIR }}/*
+            sudo mv ~/your_project/* ${{ secrets.TARGET_DIR }}/

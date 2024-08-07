@@ -12,14 +12,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Copy files to EC2
+      - name: Deploy to EC2
+        run: |
+          scp -i ${{ secrets.EC2_SSH_KEY }} -o StrictHostKeyChecking=no index.html styles.css script.js ubuntu@${{ secrets.HOST_DNS }}:/var/www/html/
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           HOST_DNS: ${{ secrets.HOST_DNS }}
-          USERNAME: ${{ secrets.USERNAME }}
-          TARGET_DIR: ${{ secrets.TARGET_DIR }}
-        run: |
-          echo "${EC2_SSH_KEY}" > private_key.pem
-          chmod 600 private_key.pem
-          scp -i private_key.pem -o StrictHostKeyChecking=no index.html styles.css script.js $USERNAME@$HOST_DNS:$TARGET_DIR
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST_DNS 'sudo systemctl restart apache2'

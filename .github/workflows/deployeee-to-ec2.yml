@@ -3,18 +3,22 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main
+      - main  # Trigger the workflow on pushes to the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
       - name: Deploy to EC2
         run: |
-          scp -i ${{ secrets.EC2_SSH_KEY }} -o StrictHostKeyChecking=no index.html styles.css script.js ubuntu@${{ secrets.HOST_DNS }}:/var/www/html/
-        env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          HOST_DNS: ${{ secrets.HOST_DNS }}
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ./index.html ubuntu@35.154.108.203:/var/www/html/index.html
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@35.154.108.203 'sudo systemctl restart apache2'

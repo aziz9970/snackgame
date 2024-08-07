@@ -8,21 +8,18 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Copy files via SSH
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-        EC2_HOST: ${{ secrets.HOST_DNS }}
-        EC2_USER: ${{ secrets.USERNAME }}
-        TARGET_DIR: /home/ubuntu
-      run: |
-        echo "$SSH_PRIVATE_KEY" > private_key.pem
-        chmod 600 private_key.pem
-        scp -i private_key.pem -o StrictHostKeyChecking=no index.html styles.css script.js $EC2_USER@$EC2_HOST:$TARGET_DIR
-
-    - name: Clean up
-      run: rm private_key.pem
+      - name: Copy files to EC2
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOST_DNS: ${{ secrets.HOST_DNS }}
+          USERNAME: ${{ secrets.USERNAME }}
+          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        run: |
+          echo "${EC2_SSH_KEY}" > private_key.pem
+          chmod 600 private_key.pem
+          scp -i private_key.pem -o StrictHostKeyChecking=no index.html styles.css script.js $USERNAME@$HOST_DNS:$TARGET_DIR
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST_DNS 'sudo systemctl restart apache2'

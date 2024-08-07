@@ -12,12 +12,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Debugging: Check out the file and directory permissions
+      - name: List workspace directory
+        run: ls -la
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # Debugging: Verify SSH setup
+      - name: List SSH directory
+        run: ls -la ~/.ssh
+
+      - name: Display SSH key
+        run: cat ~/.ssh/id_rsa
 
       - name: Deploy to EC2
         run: |

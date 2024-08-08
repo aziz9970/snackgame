@@ -1,0 +1,35 @@
+name: Docker CI/CD pipeline
+
+on: push
+branch:
+-main
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Log in to Docker Hub
+    uses:Docker/login-action@v1
+    with:
+    username: ${{secret.DOCKER_USERNAME}}
+    password: ${{secret.DOCKER_PASSWORD}}
+    -name: Build and push docker image
+    uses: docker/build-push-action@v2
+    with:
+    context:
+    push:true
+    tags: aziz@9970/webapp:${{github.sha}}
+    -name: Deploy to EC2 instance
+    uses: appleboy/ssh-action@master
+    with:
+    host: ${{secret.EC2_HOST}}
+    username: ${{secret.EC2_USERNAME}}
+    key: ${{secret.EC2_PRIVATE_KEY}}
+    script:|
+    docker stop webapp|| true
+    docker rm webapp || true
+    docker pull ${{secret.DOCKER_USERNAME}}/webapp:${{github.sha}}
+    docker run-d --name webapp -p 80:80 ${{secret.DOCKER_USERNAME}}/webapp:${{github.sha}}

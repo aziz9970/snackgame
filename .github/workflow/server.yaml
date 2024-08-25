@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # Change this to your default branch
+      - main
 
 jobs:
   deploy:
@@ -18,10 +18,12 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.HOST_DNS }} >> ~/.ssh/known_hosts
+        ssh-keyscan -H ec2-13-201-61-91.ap-south-1.compute.amazonaws.com >> ~/.ssh/known_hosts
+        ls -la ~/.ssh  # Debug: List files in the .ssh directory
+        cat ~/.ssh/id_rsa  # Debug: Output the content of the private key (use cautiously)
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
 
     - name: Deploy via rsync
       run: |
-        rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./path/to/local/dir/ ubuntu@${{ secrets.HOST_DNS }}:/path/to/remote/dir
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./path/to/local/dir/ ubuntu@ec2-13-201-61-91.ap-south-1.compute.amazonaws.com:/path/to/remote/dir
